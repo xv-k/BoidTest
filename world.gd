@@ -15,3 +15,4 @@ func create_boid():
 	var boid = boid_scene.instantiate()
 	$Boids.add_child(boid)
 	boid.global_position = get_global_mouse_position()
+	
