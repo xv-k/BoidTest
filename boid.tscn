@@ -24,6 +24,7 @@ shape = SubResource("CircleShape2D_m3b3n")
 debug_color = Color(0.912647, 9.31811e-05, 0.722477, 0.42)
 
 [node name="RayFolder" type="Node2D" parent="."]
+position = Vector2(-1, 0)
 
 [node name="RayCast2D_Front2" type="RayCast2D" parent="RayFolder"]
 position = Vector2(3, -5)

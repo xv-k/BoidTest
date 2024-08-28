@@ -73,7 +73,7 @@ texture_region_size = Vector2i(8, 8)
 
 [sub_resource type="TileSet" id="TileSet_p4t2t"]
 tile_size = Vector2i(8, 8)
-physics_layer_0/collision_layer = 1
+physics_layer_0/collision_layer = 2
 sources/1 = SubResource("TileSetAtlasSource_hwhyn")
 
 [node name="World" type="Node2D"]
