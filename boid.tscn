@@ -17,7 +17,7 @@ position = Vector2(0, -3)
 color = Color(0.172549, 1, 1, 1)
 polygon = PackedVector2Array(-10, 10, 0, -10, 10, 10)
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." groups=["boid_area"]]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("CircleShape2D_m3b3n")
@@ -41,3 +41,6 @@ target_position = Vector2(-28, -10)
 [node name="RayCast2D_SideR" type="RayCast2D" parent="RayFolder"]
 position = Vector2(3, -5)
 target_position = Vector2(28, -10)
+
+[connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]
+[connection signal="area_exited" from="Area2D" to="." method="_on_area_2d_area_exited"]
