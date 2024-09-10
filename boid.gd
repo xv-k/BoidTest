@@ -5,6 +5,9 @@ extends CharacterBody2D
 
 @onready var ray_folder := $RayFolder.get_children()
 var boids_in_range := []
+
+#TODO
+#set a random speed and a max speen and boid cant go faster than max but it can mimic the speed op the neighbours
 var boid_speed := 100.0
 var screen_size : Vector2
 
@@ -49,15 +52,23 @@ func steering():
 	#only if there are boids in range
 	if boids_in_range.size() > 0:
 		var avgDir = Vector2.ZERO
+		var avoid_collision := Vector2.ZERO
+
 		#loop over all boids in range and add their directions
 		for boid in boids_in_range:
 			avgDir += boid.direction
+			#avoid_collision -= (position - boid.position) * (50 / (position - boid.position).length())
+			#print(position)
+			#print(boid.position)
+			#print((position - boid.position).length())
 		#normalise the average direction
 		avgDir = avgDir.normalized()
+		
 		#set this direction to a value between the average direction and this direction
 		#last parameter is the percantage of how much the direction is changed (speed of turning in that direction)
 		direction = lerp(direction, avgDir, 0.05)
 
+	
 
 func _on_area_2d_area_entered(area):
 	#add the boid to the array
