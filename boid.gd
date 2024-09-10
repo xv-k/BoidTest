@@ -7,34 +7,29 @@ extends CharacterBody2D
 var boids_in_range := []
 var boid_speed := 100.0
 var screen_size : Vector2
-var movv := 48
+
+#number is a number given to the boid (at creation in the world script)
 var number: int
-
-#var avgVel:= Vector2.ZERO
-#var avgDir:= Vector2.ZERO
-#var avgPos := Vector2.ZERO
-#var steerAway := Vector2.ZERO
-
+#direction is the direction in a normalized vector
 var direction: Vector2
 
 func _ready():
 	screen_size = get_viewport_rect().size
+	collision_polygon_2d.polygon = polygon_2d.polygon
+	
 	randomize()
 	direction = Vector2(randf_range(-1,1),randf_range(-1,1))
-	#print(direction)
-	collision_polygon_2d.polygon = polygon_2d.polygon
 	polygon_2d.color = Color(randf_range(0,1),randf_range(0,1),randf_range(0,1),1)
 
 func _physics_process(_delta):
+	#velocity is the direction multiplied with the speed
 	velocity = direction * boid_speed
-	#var min_angle = rotation
-	#angle_to_point returns the angle between the line connecting the two points and the X axis, in radians.
-	#var max_angle = velocity.angle_to_point(Vector2.ZERO) - PI/2
-	#rotation = lerp_angle(min_angle, max_angle,0.4)
+	#rotation is the direction but then an angle in radiants (and because the triangle sprite faces up we turn it 90° or Pi/2)
 	rotation = direction.angle() + PI/2
+	
 	#disable it and set the collision layer of the physics layer from the tileset back to 1
 	torus_world()
-	boids()
+	steering()
 	#apperantly delta is automatically applied in move and slide?
 	move_and_slide()
 
@@ -50,47 +45,25 @@ func torus_world():
 		position.y = 0
 
 
-func boids():
+func steering():
 	#only if there are boids in range
 	if boids_in_range.size() > 0:
-		#avgVel = Vector2.ZERO
-		#avgPos = Vector2.ZERO
 		var avgDir = Vector2.ZERO
-		#loop over all boids in range and add their positions and volecities
+		#loop over all boids in range and add their directions
 		for boid in boids_in_range:
-			#avgVel += boid.velocity
-			avgDir += boid.direction.normalized()
-			#avgPos += boid.position
-		#everage the positions and velocities
-		#prints("before average", avgDir)
-		#avgVel = avgVel / boids_in_range.size()
-		#avgPos = avgPos / boids_in_range.size()
-		#avgDir = avgDir / boids_in_range.size()
-		#prints("after average", avgDir)
-		#add the average of all velocities (in range) and your velocity to yopur velocity ( so it becomes closer to the average) 
-		#velocity += (avgVel - velocity)/2
-		#direction = avgDir
-		direction = lerp(direction, avgDir.normalized(), 0.05)
-		#same for ^position
-		#position += (avgPos - velocity)/2
+			avgDir += boid.direction
+		#normalise the average direction
+		avgDir = avgDir.normalized()
+		#set this direction to a value between the average direction and this direction
+		#last parameter is the percantage of how much the direction is changed (speed of turning in that direction)
+		direction = lerp(direction, avgDir, 0.05)
 
 
 func _on_area_2d_area_entered(area):
-	#if area != self and area.is_in_group("boid_area"): #dont think the self check is needed (and area also not probably)
-		#prints("entered")
-		#boids_in_range.append(area.get_parent().number)
-		#prints("enter", number, "sees", boids_in_range)
+	#add the boid to the array
 	boids_in_range.append(area.get_parent())
 
 func _on_area_2d_area_exited(area):
-	#print("exited")
-	# using lambda function filter wants a function, i is the element
-	#boids_in_range.filter(func(i): return i != area.get_parent().number)
-	# The callable's method should take one Variant parameter (the current array element) and return a boolean value.
-
-
-	#boids_in_range = boids_in_range.filter(func(i): return number != i) 
-	#boids_in_range.erase(area.get_parent().number)
-	#prints("exit", number, "sees", boids_in_range)
+	#remove the boid to the array
 	boids_in_range.erase(area.get_parent()) 
 	

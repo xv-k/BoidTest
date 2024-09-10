@@ -5,7 +5,7 @@ var counter = 0
 var boid_scene: PackedScene = preload("res://boid.tscn")
 
 func _ready():
-	counter += 1
+	pass
 
 
 func _process(delta):
