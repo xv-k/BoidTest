@@ -10,6 +10,11 @@ var screen_size : Vector2
 var movv := 48
 var number: int
 
+#var avgVel:= Vector2.ZERO
+#var avgDir:= Vector2.ZERO
+#var avgPos := Vector2.ZERO
+#var steerAway := Vector2.ZERO
+
 var direction: Vector2
 
 func _ready():
@@ -22,14 +27,14 @@ func _ready():
 
 func _physics_process(_delta):
 	velocity = direction * boid_speed
-	var min_angle = rotation
+	#var min_angle = rotation
 	#angle_to_point returns the angle between the line connecting the two points and the X axis, in radians.
-	var max_angle = velocity.angle_to_point(Vector2.ZERO) - PI/2
-	rotation = lerp_angle(min_angle, max_angle,0.4)
-	
+	#var max_angle = velocity.angle_to_point(Vector2.ZERO) - PI/2
+	#rotation = lerp_angle(min_angle, max_angle,0.4)
+	rotation = direction.angle() + PI/2
 	#disable it and set the collision layer of the physics layer from the tileset back to 1
 	torus_world()
-	
+	boids()
 	#apperantly delta is automatically applied in move and slide?
 	move_and_slide()
 
@@ -45,15 +50,37 @@ func torus_world():
 		position.y = 0
 
 
-
+func boids():
+	#only if there are boids in range
+	if boids_in_range.size() > 0:
+		#avgVel = Vector2.ZERO
+		#avgPos = Vector2.ZERO
+		var avgDir = Vector2.ZERO
+		#loop over all boids in range and add their positions and volecities
+		for boid in boids_in_range:
+			#avgVel += boid.velocity
+			avgDir += boid.direction.normalized()
+			#avgPos += boid.position
+		#everage the positions and velocities
+		#prints("before average", avgDir)
+		#avgVel = avgVel / boids_in_range.size()
+		#avgPos = avgPos / boids_in_range.size()
+		#avgDir = avgDir / boids_in_range.size()
+		#prints("after average", avgDir)
+		#add the average of all velocities (in range) and your velocity to yopur velocity ( so it becomes closer to the average) 
+		#velocity += (avgVel - velocity)/2
+		#direction = avgDir
+		direction = lerp(direction, avgDir.normalized(), 0.05)
+		#same for ^position
+		#position += (avgPos - velocity)/2
 
 
 func _on_area_2d_area_entered(area):
-	if area != self and area.is_in_group("boid_area"): #dont think the self check is needed (and area also not probably)
+	#if area != self and area.is_in_group("boid_area"): #dont think the self check is needed (and area also not probably)
 		#prints("entered")
-		boids_in_range.append(area.get_parent().number)
-		prints("enter", number, "sees", boids_in_range)
-
+		#boids_in_range.append(area.get_parent().number)
+		#prints("enter", number, "sees", boids_in_range)
+	boids_in_range.append(area.get_parent())
 
 func _on_area_2d_area_exited(area):
 	#print("exited")
@@ -63,5 +90,7 @@ func _on_area_2d_area_exited(area):
 
 
 	#boids_in_range = boids_in_range.filter(func(i): return number != i) 
-	boids_in_range.erase(area.get_parent().number) 
-	prints("exit", number, "sees", boids_in_range)
+	#boids_in_range.erase(area.get_parent().number)
+	#prints("exit", number, "sees", boids_in_range)
+	boids_in_range.erase(area.get_parent()) 
+	
