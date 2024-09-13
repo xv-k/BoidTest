@@ -27,25 +27,6 @@ polygon = PackedVector2Array(-10, 10, 0, -10, 10, 10)
 shape = SubResource("CircleShape2D_m3b3n")
 debug_color = Color(0.912647, 9.31811e-05, 0.722477, 0.42)
 
-[node name="RayFolder" type="Node2D" parent="."]
-position = Vector2(-1, 0)
-
-[node name="RayCast2D_Front2" type="RayCast2D" parent="RayFolder"]
-position = Vector2(3, -5)
-target_position = Vector2(5, -50)
-
-[node name="RayCast2D_Front1" type="RayCast2D" parent="RayFolder"]
-position = Vector2(-3, -5)
-target_position = Vector2(-5, -54)
-
-[node name="RayCast2D_SideL" type="RayCast2D" parent="RayFolder"]
-position = Vector2(-3, -5)
-target_position = Vector2(-28, -10)
-
-[node name="RayCast2D_SideR" type="RayCast2D" parent="RayFolder"]
-position = Vector2(3, -5)
-target_position = Vector2(28, -10)
-
 [node name="Label" type="Label" parent="."]
 top_level = true
 offset_left = 22.0

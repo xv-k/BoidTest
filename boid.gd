@@ -4,10 +4,8 @@ extends CharacterBody2D
 @onready var polygon_2d := $Polygon2D
 @onready var label = $Label
 
-@onready var ray_folder := $RayFolder.get_children()
 var boids_in_range := []
 
-#TODO
 var max_speed = 250
 var speed : float
 var screen_size : Vector2
@@ -26,7 +24,7 @@ func _ready():
 	polygon_2d.color = Color(randf_range(0,1),randf_range(0,1),randf_range(0,1),1)
 
 func _physics_process(_delta):
-	if speed > max_speed: speed = max_speed
+	#if speed > max_speed: speed = max_speed
 	#velocity is the direction multiplied with the speed
 	velocity = direction.normalized() * speed
 	#rotation is the direction but then an angle in radiants (and because the triangle sprite faces up we turn it 90° or Pi/2)
@@ -65,43 +63,44 @@ func alignment():
 		for boid in boids_in_range:
 			avgDir += boid.direction
 			avgSpeed += boid.speed
-			#avoid_collision -= (position - boid.position) * (50 / (position - boid.position).length())
-			#print(position)
-			#print(boid.position)
-			#print((position - boid.position).length())
+
 		avgDir = avgDir / boids_in_range.size()
 		avgSpeed = avgSpeed / boids_in_range.size()
-		#normalise the average direction
-		#avgDir = avgDir.normalized()
+		
+		#with a steering variable, direction is not set to the avg dirtection directly, but to a point in between
+		var steering = direction + avgDir
+
 		#set this direction to a value between the average direction and this direction
 		#last parameter is the percantage of how much the direction is changed (speed of turning in that direction)
 		#direction = lerp(direction, avgDir, 0.05)
-		look_at(avgDir.orthogonal())  
-		#direction = direction + avgDir
+		direction = lerp(direction, steering.normalized(), 0.05)
 		speed = lerp(speed, avgSpeed, 0.05)
-		
-		#steering according to reinolds is desired - current
-		#direction = avgDir - direction
-		#speed = avgSpeed - speed
 
 func cohesion():
 	#only if there are boids in range
 	if boids_in_range.size() > 0:
-		var avgPosition = Vector2.ZERO
-		var avgSpeed = 0
-		#loop over all boids in range and add their positions
+		#we "align" their directions and their speed (= together their velocity)
+		var avgPos = Vector2.ZERO
+		#var avgSpeed = 0
+
+		#loop over all boids in range and add their directions
 		for boid in boids_in_range:
-			avgPosition += boid.position
-			avgSpeed += boid.speed
-		avgPosition = avgPosition / boids_in_range.size()
-		avgSpeed = avgSpeed / boids_in_range.size()
-		#normalise the average direction
-		#avgDir = avgDir.normalized()
+			avgPos += boid.position
+			#avgSpeed += boid.speed
+
+		avgPos = avgPos / boids_in_range.size()
+		#avgSpeed = avgSpeed / boids_in_range.size()
+		
+		#with a steering variable, direction is not set to the avg dirtection directly, but to a point in between
+		var steering = direction + avgPos
+
 		#set this direction to a value between the average direction and this direction
 		#last parameter is the percantage of how much the direction is changed (speed of turning in that direction)
-		#var steering = position - avgPosition
-		direction = lerp(position, avgPosition, 0.4)
-		speed = lerp(speed, avgSpeed, 0.05)
+		#direction = lerp(direction, avgDir, 0.05)
+		position = lerp(position, avgPos, 0.05)
+		#speed = lerp(speed, avgSpeed, 0.05)
+	#cohesion is achieved with alignment?
+	#TODO need to separate this out
 		
 func _on_area_2d_area_entered(area):
 	#add the boid to the array
