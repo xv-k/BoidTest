@@ -1,11 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://drhhduikrur3p"]
+[gd_scene load_steps=4 format=3 uid="uid://drhhduikrur3p"]
 
 [ext_resource type="Script" path="res://boid.gd" id="1_wwdg8"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_m3b3n"]
 radius = 34.0
 
+[sub_resource type="LabelSettings" id="LabelSettings_82rb5"]
+font_size = 8
+
 [node name="Boid" type="CharacterBody2D"]
+collision_mask = 4
 script = ExtResource("1_wwdg8")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
@@ -41,6 +45,15 @@ target_position = Vector2(-28, -10)
 [node name="RayCast2D_SideR" type="RayCast2D" parent="RayFolder"]
 position = Vector2(3, -5)
 target_position = Vector2(28, -10)
+
+[node name="Label" type="Label" parent="."]
+top_level = true
+offset_left = 22.0
+offset_top = -30.0
+offset_right = 60.0
+offset_bottom = -18.0
+text = "direction"
+label_settings = SubResource("LabelSettings_82rb5")
 
 [connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]
 [connection signal="area_exited" from="Area2D" to="." method="_on_area_2d_area_exited"]
