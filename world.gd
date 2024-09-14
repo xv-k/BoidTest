@@ -5,7 +5,8 @@ var counter = 0
 var boid_scene: PackedScene = preload("res://boid.tscn")
 
 func _ready():
-	for n in 100:
+	#pass
+	for n in 50:
 		create_boid()
 
 
@@ -19,5 +20,14 @@ func create_boid():
 	#substritutes as a constructor = Named Constructors/Factory Methods design patters)
 	$Boids.add_child(boid)
 	#boid.global_position = get_global_mouse_position()
-	boid.global_position = Vector2(randi_range(0, get_viewport_rect().size.x), randi_range(0, get_viewport_rect().size.y))
+	boid.global_position = Vector2(randf_range(0, get_viewport_rect().size.x), randf_range(0, get_viewport_rect().size.y))
+	#boid.global_position = Vector2(get_viewport_rect().size.x/2, get_viewport_rect().size.y/2)
 	
+
+func _on_check_button_toggled(toggled_on):
+	if toggled_on:
+		for boid in $Boids.get_children():
+			boid.debug = true
+	else:
+		for boid in $Boids.get_children():
+			boid.debug = false
