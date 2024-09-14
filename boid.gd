@@ -7,40 +7,36 @@ extends CharacterBody2D
 var boids_in_range := []
 
 var max_speed = 250
-var speed : float
 var screen_size : Vector2
 
-#number is a number given to the boid (at creation in the world script)
-var number: int
-#direction is the direction in a normalized vector
-var direction: Vector2
 
 func _ready():
 	screen_size = get_viewport_rect().size
 	collision_polygon_2d.polygon = polygon_2d.polygon
 	
 	randomize()
-	direction = Vector2(randf_range(-1,1),randf_range(-1,1))
+	velocity = Vector2(randf_range(-1,1),randf_range(-1,1)) * randf_range(0, max_speed)
 	polygon_2d.color = Color(randf_range(0,1),randf_range(0,1),randf_range(0,1),1)
 
+
 func _physics_process(_delta):
-	#if speed > max_speed: speed = max_speed
-	#velocity is the direction multiplied with the speed
-	velocity = direction.normalized() * speed
-	#rotation is the direction but then an angle in radiants (and because the triangle sprite faces up we turn it 90° or Pi/2)
-	rotation = direction.angle() + PI/2
+	rotation = velocity.angle()
+	
 	#str() converts to string
 	#snapped can round numbers (acytually sets steps)
-	label.text = str(snapped(direction, Vector2(0.01, 0.01)), snapped(speed,1))
+	label.text = str(snapped(velocity.normalized(), Vector2(0.01, 0.01)), snapped(velocity.length(),1))
 	label.position = position + Vector2(15,-25)
+	
 	#disable it and set the collision layer of the physics layer from the tileset back to 1
 	torus_world()
 	alignment()
-	#cohesion()
+	#mouse following
+	#steering_to_mouseposition()
+	cohesion()
 	#apperantly delta is automatically applied in move and slide?
 	move_and_slide()
-
-
+	
+	
 func torus_world():
 	if position.x < 0:
 		position.x = screen_size.x
@@ -56,51 +52,31 @@ func alignment():
 	#only if there are boids in range
 	if boids_in_range.size() > 0:
 		#we "align" their directions and their speed (= together their velocity)
-		var avgDir = Vector2.ZERO
-		var avgSpeed = 0
+		var avgVelocity = Vector2.ZERO
 
 		#loop over all boids in range and add their directions
 		for boid in boids_in_range:
-			avgDir += boid.direction
-			avgSpeed += boid.speed
+			avgVelocity += boid.velocity
 
-		avgDir = avgDir / boids_in_range.size()
-		avgSpeed = avgSpeed / boids_in_range.size()
+		avgVelocity = avgVelocity / boids_in_range.size()
+		var target_position = position + avgVelocity
 		
-		#with a steering variable, direction is not set to the avg dirtection directly, but to a point in between
-		var steering = direction + avgDir
-
-		#set this direction to a value between the average direction and this direction
-		#last parameter is the percantage of how much the direction is changed (speed of turning in that direction)
-		#direction = lerp(direction, avgDir, 0.05)
-		direction = lerp(direction, steering.normalized(), 0.05)
-		speed = lerp(speed, avgSpeed, 0.05)
+		velocity += steering_vector(target_position)
+		
 
 func cohesion():
 	#only if there are boids in range
 	if boids_in_range.size() > 0:
 		#we "align" their directions and their speed (= together their velocity)
-		var avgPos = Vector2.ZERO
-		#var avgSpeed = 0
+		var avgPosition = Vector2.ZERO
 
 		#loop over all boids in range and add their directions
 		for boid in boids_in_range:
-			avgPos += boid.position
-			#avgSpeed += boid.speed
+			avgPosition += boid.position
 
-		avgPos = avgPos / boids_in_range.size()
-		#avgSpeed = avgSpeed / boids_in_range.size()
+		avgPosition = avgPosition / boids_in_range.size()
 		
-		#with a steering variable, direction is not set to the avg dirtection directly, but to a point in between
-		var steering = direction + avgPos
-
-		#set this direction to a value between the average direction and this direction
-		#last parameter is the percantage of how much the direction is changed (speed of turning in that direction)
-		#direction = lerp(direction, avgDir, 0.05)
-		position = lerp(position, avgPos, 0.05)
-		#speed = lerp(speed, avgSpeed, 0.05)
-	#cohesion is achieved with alignment?
-	#TODO need to separate this out
+		velocity += steering_vector(avgPosition)
 		
 func _on_area_2d_area_entered(area):
 	#add the boid to the array
@@ -110,3 +86,23 @@ func _on_area_2d_area_exited(area):
 	#remove the boid to the array
 	boids_in_range.erase(area.get_parent()) 
 	
+#returns a new velocity
+func steering_vector(
+	target_position : Vector2,
+	max_speed := 150,
+	mass := 120.0
+	) -> Vector2:
+	
+	#calculate the vector where the boid wants to go
+	var desired_velocity = target_position - position
+	#normalise this vector	
+	#speed should be intrinsic (for now a speed is set in creation and it stays like that)
+	var scaled_desired_velocity = desired_velocity.normalized() * max_speed
+	#devide it by its mass: how bigger the mass how smaller the vector (slaower the turning)
+	var steer = (scaled_desired_velocity - velocity) / mass
+	#velocity = Vector2.ZERO
+	return steer
+	
+func steering_to_mouseposition():
+	velocity += steering_vector(get_global_mouse_position())
+
