@@ -5,8 +5,8 @@ var counter = 1
 var boid_scene: PackedScene = preload("res://boid.tscn")
 
 func _ready():
-	#pass
-	for n in 100:
+	pass
+	for n in 25:
 		create_boid()
 
 
