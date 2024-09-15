@@ -1,12 +1,12 @@
 extends Node2D
 @onready var tile_map = $TileMap
-var counter = 0
+var counter = 1
 
 var boid_scene: PackedScene = preload("res://boid.tscn")
 
 func _ready():
 	#pass
-	for n in 50:
+	for n in 100:
 		create_boid()
 
 
@@ -19,6 +19,8 @@ func create_boid():
 	#we can add a "constructor" here (most logical way ist to create a fucntion in the boid that 
 	#substritutes as a constructor = Named Constructors/Factory Methods design patters)
 	$Boids.add_child(boid)
+	boid.number = counter
+	counter += 1
 	#boid.global_position = get_global_mouse_position()
 	boid.global_position = Vector2(randf_range(0, get_viewport_rect().size.x), randf_range(0, get_viewport_rect().size.y))
 	#boid.global_position = Vector2(get_viewport_rect().size.x/2, get_viewport_rect().size.y/2)

@@ -1,6 +1,11 @@
 extends CharacterBody2D
 
 @export var debug := false
+@export var alignment_factor := 1.0
+@export var cohesion_factor := 1.0
+@export var separation_factor := 1.0
+
+
 @onready var collision_polygon_2d := $CollisionPolygon2D
 @onready var polygon_2d := $Polygon2D
 @onready var label = $Label
@@ -11,7 +16,8 @@ extends CharacterBody2D
 
 var boids_in_range := []
 
-var max_speed = 100
+var number := 0
+var max_speed = 300
 var screen_size : Vector2
 var steering_force := Vector2.ZERO
 var mass := 50
@@ -22,7 +28,7 @@ func _ready():
 	
 	randomize()
 	#velocity = Vector2(randf_range(-1,1),randf_range(-1,1)) * randf_range(0, max_speed)
-	velocity = Vector2(randf_range(-1,1),randf_range(-1,1)).normalized() * randf_range(0, max_speed)
+	velocity = Vector2(randf_range(-1,1),randf_range(-1,1)).normalized() * randf_range(10, max_speed)
 	#velocity = Vector2(randf_range(-1,1),randf_range(-1,1)).normalized() * max_speed
 	#velocity.length() = 10
 	polygon_2d.color = Color(randf_range(0,1),randf_range(0,1),randf_range(0,1),1)
@@ -45,23 +51,26 @@ func _physics_process(_delta):
 	label.position = position + Vector2(15,-25)
 	
 	#disable it and set the collision layer of the physics layer from the tileset back to 1
+	
 	torus_world()
 	#alignment(1)
 	#mouse following
 
 	#steering_force = steering_to_mouseposition() / mass
 	steering_force = Vector2.ZERO
-	steering_force += steering_vector(alignment())
-	steering_force += steering_vector(cohesion()) 
-	steering_force += steering_vector(separation()) 
-	#cohesion(1)
-	#separation(1)
+	alignment()
+	#steering_force += steering_vector(cohesion()) 
+	#steering_force += steering_vector(separation()) 
+	cohesion()
+	separation()
 	#apperantly delta is automatically applied in move and slide?
 	#var total_steering_direction = (alignment(1) + cohesion(1) + separation(1)) / 3
 	#velocity += total_steering_direction
 	#velocity += acceleration
 	#F = M x a 
 	velocity += steering_force / mass
+	
+	prints(number, steering_force/mass, boids_in_range.size())
 	move_and_slide()
 	
 	
@@ -76,9 +85,8 @@ func torus_world():
 		position.y = 0
 
 
-func alignment() -> Vector2:
+func alignment():
 	#only if there are boids in range
-	var target_position := Vector2.ZERO
 	if boids_in_range.size() > 0:
 		#we "align" their directions and their speed (= together their velocity)
 		var avgVelocity = Vector2.ZERO
@@ -89,17 +97,15 @@ func alignment() -> Vector2:
 			
 			avgVelocity += boid.velocity
 
-		avgVelocity = avgVelocity / boids_in_range.size()
-		
+		avgVelocity /= boids_in_range.size()
+		#avgVelocity = avgVelocity.normalized() * alignment_factor
 		#the position we want to steer to is our position + the averge postition of the group
-		target_position = position + avgVelocity
+		#target_position = 
 		#return steering_vector(target_position)
-		#velocity += steering_vector(target_position) * weight
-	return target_position
+		steering_force += steering_vector(position + avgVelocity) * alignment_factor
 
-func cohesion() -> Vector2:
+func cohesion():
 	#only if there are boids in range
-	var target_position := Vector2.ZERO
 	if boids_in_range.size() > 0:
 		#look for the average position (the center) of the group
 		var avgPosition = Vector2.ZERO
@@ -107,14 +113,14 @@ func cohesion() -> Vector2:
 		#loop over all boids in range and add their directions
 		for boid in boids_in_range:
 			avgPosition += boid.position
-			
-		target_position = avgPosition / boids_in_range.size()
-	return target_position
+		
+		#avg position can be seen as the midpoint 
+		avgPosition /= boids_in_range.size()
+		steering_force += steering_vector(avgPosition) * cohesion_factor
 
 		
-func separation() -> Vector2:
+func separation():
 	#only if there are boids in range
-	var target_position := Vector2.ZERO
 	var distance := 0.0
 	if boids_in_range.size() > 0:
 		#we have our position and add the inverse of the average distance of all boids in the group
@@ -128,12 +134,12 @@ func separation() -> Vector2:
 			#avgDifference += (boid.position - position) * distance
 
 		difference = difference / boids_in_range.size()
-		target_position = difference #position + avgDifference
-	return target_position
+		steering_force += steering_vector(difference) * separation_factor
 		
 func _on_area_2d_area_entered(area):
 	#add the boid to the array
 	boids_in_range.append(area.get_parent())
+	
 
 func _on_area_2d_area_exited(area):
 	#remove the boid to the array
