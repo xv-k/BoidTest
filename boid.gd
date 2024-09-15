@@ -54,7 +54,6 @@ func _physics_process(_delta):
 	alignment()
 	cohesion()
 	separation()
-
 	
 	
 	#to show the force lines
