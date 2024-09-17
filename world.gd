@@ -1,12 +1,11 @@
 extends Node2D
-@onready var tile_map = $TileMap
 var counter = 1
 
 var boid_scene: PackedScene = preload("res://boid.tscn")
 
 func _ready():
 	pass
-	for n in 100:
+	for n in 10:
 		create_boid()
 
 

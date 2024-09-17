@@ -9,6 +9,9 @@ extends CharacterBody2D
 @onready var polygon_2d := $Polygon2D
 @onready var label = $Label
 
+@onready var tile_map := %TileMap
+
+
 var boids_in_range := []
 
 var number := 0
@@ -162,4 +165,21 @@ func steering_vector(target_position : Vector2, factor: float) -> Vector2:
 	
 func steering_to_mouse_position():
 	steering_force += steering_vector(get_global_mouse_position(), 1.0)
+	
+func avoid_obstacles():
+	pass
 
+
+
+func _on_area_2d_body_entered(body):
+	if body.is_in_group("border"):
+		print("border")
+	#var target_position := Vector2.ZERO	
+	##distance is used to scale the vector (closer is bigger, further is smaller)
+	#var distance := 0.0
+	##calculate distance
+	#distance = position.distance_to(body.position)
+	##we have our position and substract the difference between the two positions
+	## -> we come out at the other side but we divide by distance because we need the inverse of the distance
+	#target_position = position - ((body.position - position) / distance)
+	#steering_force += steering_vector(target_position, 1.0)
